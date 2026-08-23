@@ -4,6 +4,8 @@ import java.util.Collections;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,7 +15,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.format.FormatterRegistry;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.webflow.config.FlowBuilderServicesBuilder;
 import org.springframework.webflow.config.FlowDefinitionRegistryBuilder;
 import org.springframework.webflow.config.FlowExecutorBuilder;
@@ -41,7 +43,10 @@ import nz.net.ultraq.thymeleaf.LayoutDialect;
 
 @Configuration
 @ComponentScan(basePackages = { "net.hka.common", "net.hka.examples.thymeleaf" })
-class MvcConfig extends WebMvcConfigurationSupport {
+class MvcConfig implements WebMvcConfigurer {
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	private static final String VIEWS = "classpath:/templates/";
 
@@ -61,7 +66,7 @@ class MvcConfig extends WebMvcConfigurationSupport {
 	public FlowHandlerMapping flowHandlerMapping() {
 
 		FlowHandlerMapping handlerMapping = new FlowHandlerMapping();
-		handlerMapping.setOrder(-1);
+		handlerMapping.setOrder(1);
 		handlerMapping.setFlowRegistry(this.flowRegistry());
 		return handlerMapping;
 	}
@@ -126,7 +131,7 @@ class MvcConfig extends WebMvcConfigurationSupport {
 	 * @return the created builder
 	 */
 	protected FlowDefinitionRegistryBuilder getFlowDefinitionRegistryBuilder() {
-		return new FlowDefinitionRegistryBuilder(this.getApplicationContext());
+		return new FlowDefinitionRegistryBuilder(applicationContext);
 	}
 
 	/**
@@ -137,7 +142,7 @@ class MvcConfig extends WebMvcConfigurationSupport {
 	 * @return the created builder
 	 */
 	protected FlowDefinitionRegistryBuilder getFlowDefinitionRegistryBuilder(FlowBuilderServices flowBuilderServices) {
-		return new FlowDefinitionRegistryBuilder(this.getApplicationContext(), flowBuilderServices);
+		return new FlowDefinitionRegistryBuilder(applicationContext, flowBuilderServices);
 	}
 
 	/**

@@ -8,8 +8,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     
     <!-- for ajax request we need to send csrf token along with the request -->
-	<meta name="_csrf" th:content="${_csrf.token}">
-	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	<meta name="_csrf" th:content="${_csrf?.token}">
+	<meta name="_csrf_header" th:content="${_csrf?.headerName}">
     
     <link rel="shortcut icon" type="image/x-icon" th:href="@{/resources/images/favicon.ico}">
     

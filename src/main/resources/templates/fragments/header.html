@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <link href="../../../resources/css/bootstrap.min.css" rel="stylesheet"
 	media="screen" th:href="@{/resources/css/bootstrap.min.css}" />
 </head>
@@ -33,6 +35,10 @@
                 
                 <li th:classappend="${module == 'tasks-flow' ? 'active' : ''}">
                     <a href="#" th:href="@{/taskFlow}">Tasks CRUD (Thymeleaf WebFlow AJAX Forms + Validations)</a>
+                </li>
+
+                <li th:classappend="${module == 'excel-upload' ? 'active' : ''}">
+                    <a href="#" th:href="@{/excel-upload}">Excel Upload</a>
                 </li>
                 
                 <!-- <li th:classappend="${module == 'ajax' ? 'active' : ''}">

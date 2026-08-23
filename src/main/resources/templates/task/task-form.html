@@ -25,7 +25,7 @@
 	    </div>
         <div id="taskFormDiv" th:object="${task}" th:fragment="taskFormFragment">
 			<form id="addTaskForm" class="form-narrow form-horizontal" action="save" method="post">				
-				<input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+				<input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
 				<input type="hidden" name="id" th:value="*{id}" />
 				
 				<!--/* Show general error message when form contains errors */-->

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Excel Upload</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/resources/images/favicon.ico}">
+
+    <link href="../../../resources/css/bootstrap.min.css" rel="stylesheet" media="screen" th:href="@{/resources/css/bootstrap.min.css}"/>
+    <link href="../../../resources/css/core.css" rel="stylesheet" media="screen" th:href="@{/resources/css/core.css}"/>
+
+    <script src="jquery.min.js" th:src="@{/resources/js/jquery.min.js}"></script>
+    <script src="bootstrap.min.js" th:src="@{/resources/js/bootstrap.min.js}"></script>
+
+    <style>
+        .upload-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .file-upload-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .btn-group-custom {
+            margin-top: 15px;
+        }
+        .result-section {
+            margin-top: 20px;
+        }
+        .error-row {
+            background-color: #fff3cd !important;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9em;
+        }
+        .success-message {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .tab-content {
+            margin-top: 15px;
+        }
+        .nav-tabs {
+            margin-bottom: 0;
+        }
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <div layout:fragment="content">
+        <div class="upload-container">
+            <h2>Excel 文件上传与校验</h2>
+
+            <div class="info-box">
+                <strong>说明：</strong>请上传包含两个工作表的 Excel 文件（.xlsx 格式）：
+                <ul style="margin-bottom: 0;">
+                    <li><strong>电脑订单表</strong>：品牌、价格、内存大小、出厂日期、销售日期</li>
+                    <li><strong>客户表</strong>：客户名称、客户电话、电脑型号、台数、邮箱</li>
+                </ul>
+            </div>
+
+            <div class="file-upload-section">
+                <div class="form-group">
+                    <label for="excelFile">选择 Excel 文件：</label>
+                    <input type="file" id="excelFile" name="file" accept=".xlsx,.xls" class="form-control">
+                </div>
+
+                <div class="btn-group-custom">
+                    <button type="button" id="btnCheck" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-check"></span> Check
+                    </button>
+                    <button type="button" id="btnUpload" class="btn btn-success" disabled>
+                        <span class="glyphicon glyphicon-upload"></span> Upload
+                    </button>
+                    <button type="button" id="btnReset" class="btn btn-default">
+                        <span class="glyphicon glyphicon-refresh"></span> Reset
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultSection" class="result-section" style="display: none;">
+                <div id="messageBox" class="alert"></div>
+
+                <div id="dataSection" style="display: none;">
+                    <ul class="nav nav-tabs" id="dataTabs">
+                        <li class="active">
+                            <a href="#computerTab" data-toggle="tab">电脑订单</a>
+                        </li>
+                        <li>
+                            <a href="#customerTab" data-toggle="tab">客户信息</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="computerTab">
+                            <h4>电脑订单列表</h4>
+                            <div class="table-container">
+                                <table class="table table-bordered table-striped table-hover" id="computerTable">
+                                    <thead>
+                                        <tr class="info">
+                                            <th>行号</th>
+                                            <th>品牌</th>
+                                            <th>价格</th>
+                                            <th>内存大小</th>
+                                            <th>出厂日期</th>
+                                            <th>销售日期</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="computerTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="customerTab">
+                            <h4>客户信息列表</h4>
+                            <div class="table-container">
+                                <table class="table table-bordered table-striped table-hover" id="customerTable">
+                                    <thead>
+                                        <tr class="info">
+                                            <th>行号</th>
+                                            <th>客户名称</th>
+                                            <th>客户电话</th>
+                                            <th>电脑型号</th>
+                                            <th>台数</th>
+                                            <th>邮箱</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</div>
+
+    <!-- Excel 上传页面业务逻辑（独立 JS 文件，与后端 max-file-size=20MB 对齐） -->
+    <!-- 缓存策略：
+         - 开发期：devtools 会让浏览器禁用 JS 缓存；每次强制 reload 都能拿到最新内容
+         - 生产期：浏览器根据静态资源的 Cache-Control 头缓存（Spring 默认 /resources/** 走 304 协商缓存）
+         - 文件改了：Spring 静态资源的 ETag/Last-Modified 会自动失效浏览器缓存 -->
+    <script th:src="@{/resources/js/excel-upload/excel-upload.js}"></script>
+
+</body>
+</html>
