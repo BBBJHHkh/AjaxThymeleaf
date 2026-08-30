@@ -40,3 +40,16 @@ hs_err_pid*
 
 # Ignoring all .class files to be uploaded into my GIT repository
 /thymeleaf-layouts-webflow-ajax-security/target/
+
+# Editor / IDE personal configs
+.vscode/
+.idea/
+*.iml
+
+# Excel lock files (created when an Excel file is opened)
+~$*
+*.tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db
