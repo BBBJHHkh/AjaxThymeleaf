@@ -59,6 +59,44 @@
     font-weight: bold;
 }
 
+/* --- 工作表状态区域 --- */
+.sheet-statistics {
+    margin-top: 5px;
+}
+
+.sheet-statistics .label {
+    margin-right: 8px;
+    font-size: 0.9em;
+    padding: 0.3em 0.6em;
+}
+
+/* 文件级信息区域 */
+#dataSection .alert-info:first-child {
+    border-left: 4px solid #31708f;
+}
+
+/* 工作表错误提示 */
+.alert hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.alert small {
+    display: block;
+    margin-top: 5px;
+    line-height: 1.6;
+}
+
+/* 错误列表样式 */
+.alert ul {
+    margin: 5px 0 0 20px;
+    padding: 0;
+}
+
+.alert ul li {
+    margin-bottom: 3px;
+}
+
 /* --- 标签页（Tabs）--- */
 .nav-tabs {
     margin-bottom: 0;

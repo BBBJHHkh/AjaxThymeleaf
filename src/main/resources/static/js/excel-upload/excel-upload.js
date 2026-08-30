@@ -68,7 +68,7 @@ $(function() {
             success: function(result) {
                 $('#btnCheck').prop('disabled', false).html('<span class="glyphicon glyphicon-check"></span> ' + MSG.BTN_CHECK);
 
-                if (result.valid && !result.hasErrors) {
+                if (result.valid && !result.hasDataErrors) {
                     validatedData = result;
                     $('#btnUpload').prop('disabled', false);
                     showMessage(result.message || MSG.CHECK_PASSED, 'success');
@@ -76,12 +76,28 @@ $(function() {
                 } else {
                     validatedData = null;
                     $('#btnUpload').prop('disabled', true);
-                    var errorMsg = MSG.CHECK_FAILED;
-                    if (result.errors && result.errors.length > 0) {
-                        errorMsg += '<br>' + result.errors.join('<br>');
+                    
+                    // 构建错误消息
+                    var errorMsg = result.message || MSG.CHECK_FAILED;
+                    
+                    // 文件级错误
+                    if (result.fileValidation && result.fileValidation.errors && result.fileValidation.errors.length > 0) {
+                        errorMsg += '<hr>' + result.fileValidation.errors.join('<br>');
                     }
+                    
+                    // 兼容旧版 errors 字段
+                    if (result.errors && result.errors.length > 0) {
+                        errorMsg += '<hr>' + result.errors.join('<br>');
+                    }
+                    
                     showMessage(errorMsg, 'danger');
-                    $('#dataSection').hide();
+                    
+                    // 如果有工作表数据，仍然显示（即使有错误）
+                    if (result.computerOrders || result.customers) {
+                        displayData(result);
+                    } else {
+                        $('#dataSection').hide();
+                    }
                 }
             },
             error: function(xhr, status, error) {
@@ -162,54 +178,170 @@ $(function() {
         $('#dataSection').show();
         $('#tabContent').show();
 
-        // Display computer orders
-        var computerBody = $('#computerTableBody');
-        computerBody.empty();
-        if (result.computerOrders && result.computerOrders.length > 0) {
-            $.each(result.computerOrders, function(i, order) {
-                var rowClass = order.valid ? '' : 'error-row';
-                var statusBadge = order.valid
-                    ? '<span class="label label-success">' + MSG.STATUS_VALID + '</span>'
-                    : '<span class="label label-danger">' + MSG.STATUS_INVALID + '</span>';
-                var errorMsg = order.errorMessage || '';
+        // ===== 显示文件级信息 =====
+        displayFileInfo(result.fileValidation);
 
-                computerBody.append(
-                    '<tr class="' + rowClass + '">' +
+        // ===== 显示电脑订单工作表 =====
+        displaySheetData(
+            result.computerOrdersSheet,
+            result.computerOrders,
+            'computer',
+            '#computerSheetStatus',
+            '#computerTableBody',
+            function(order) {
+                return '<tr class="' + (order.valid ? '' : 'error-row') + '">' +
                     '<td>' + order.rowNumber + '</td>' +
                     '<td>' + (order.brand || '') + '</td>' +
                     '<td>' + (order.price || '') + '</td>' +
                     '<td>' + (order.memorySize || '') + '</td>' +
                     '<td>' + (order.manufactureDate || '') + '</td>' +
                     '<td>' + (order.saleDate || '') + '</td>' +
-                    '<td>' + statusBadge + (errorMsg ? '<br><small class="error-message">' + errorMsg + '</small>' : '') + '</td>' +
-                    '</tr>'
-                );
-            });
-        }
+                    '<td>' + buildStatusCell(order) + '</td>' +
+                    '</tr>';
+            }
+        );
 
-        // Display customers
-        var customerBody = $('#customerTableBody');
-        customerBody.empty();
-        if (result.customers && result.customers.length > 0) {
-            $.each(result.customers, function(i, customer) {
-                var rowClass = customer.valid ? '' : 'error-row';
-                var statusBadge = customer.valid
-                    ? '<span class="label label-success">' + MSG.STATUS_VALID + '</span>'
-                    : '<span class="label label-danger">' + MSG.STATUS_INVALID + '</span>';
-                var errorMsg = customer.errorMessage || '';
-
-                customerBody.append(
-                    '<tr class="' + rowClass + '">' +
+        // ===== 显示客户信息工作表 =====
+        displaySheetData(
+            result.customersSheet,
+            result.customers,
+            'customer',
+            '#customerSheetStatus',
+            '#customerTableBody',
+            function(customer) {
+                return '<tr class="' + (customer.valid ? '' : 'error-row') + '">' +
                     '<td>' + customer.rowNumber + '</td>' +
                     '<td>' + (customer.name || '') + '</td>' +
                     '<td>' + (customer.phone || '') + '</td>' +
                     '<td>' + (customer.computers || '') + '</td>' +
                     '<td>' + (customer.quantity || '') + '</td>' +
                     '<td>' + (customer.email || '') + '</td>' +
-                    '<td>' + statusBadge + (errorMsg ? '<br><small class="error-message">' + errorMsg + '</small>' : '') + '</td>' +
-                    '</tr>'
-                );
-            });
+                    '<td>' + buildStatusCell(customer) + '</td>' +
+                    '</tr>';
+            }
+        );
+    }
+
+    /**
+     * 显示文件级信息
+     */
+    function displayFileInfo(fileValidation) {
+        if (!fileValidation) return;
+
+        var html = '<div class="alert alert-info" style="margin-top: 15px;">';
+        html += '<strong><span class="glyphicon glyphicon-file"></span> 文件信息</strong><br>';
+        html += '<small>';
+        html += '工作表数量: <strong>' + (fileValidation.sheetCount || 0) + '</strong>';
+        if (fileValidation.allSheetNames && fileValidation.allSheetNames.length > 0) {
+            html += ' (' + fileValidation.allSheetNames.join(', ') + ')';
         }
+        html += '</small>';
+        html += '</div>';
+
+        // 在 dataSection 开头插入
+        $('#dataSection').prepend(html);
+    }
+
+    /**
+     * 显示工作表数据（包含工作表状态和统计）
+     */
+    function displaySheetData(sheetValidation, dataList, sheetType, statusSelector, tableBodySelector, rowBuilder) {
+        if (!sheetValidation) return;
+
+        // 构建工作表状态 HTML
+        var statusHtml = buildSheetStatusHtml(sheetValidation, dataList);
+        $(statusSelector).html(statusHtml).show();
+
+        // 显示表格数据
+        var tableBody = $(tableBodySelector);
+        tableBody.empty();
+
+        if (dataList && dataList.length > 0) {
+            $.each(dataList, function(i, item) {
+                tableBody.append(rowBuilder(item));
+            });
+        } else {
+            // 显示"无数据"提示
+            var colCount = tableBody.closest('table').find('thead th').length;
+            tableBody.append(
+                '<tr><td colspan="' + colCount + '" class="text-center text-muted">' +
+                '<em>无数据</em></td></tr>'
+            );
+        }
+    }
+
+    /**
+     * 构建工作表状态 HTML（包含错误和统计）
+     */
+    function buildSheetStatusHtml(sheetValidation, dataList) {
+        var html = '';
+
+        // 工作表状态
+        var statusClass = 'info';
+        var statusIcon = 'info-sign';
+        var statusText = '正常';
+
+        if (sheetValidation.status === 'NOT_FOUND') {
+            statusClass = 'danger';
+            statusIcon = 'remove-circle';
+            statusText = '未找到工作表';
+        } else if (sheetValidation.status === 'EMPTY') {
+            statusClass = 'warning';
+            statusIcon = 'warning-sign';
+            statusText = '工作表为空';
+        } else if (sheetValidation.status === 'PARSE_ERROR') {
+            statusClass = 'danger';
+            statusIcon = 'exclamation-sign';
+            statusText = '解析错误';
+        } else if (sheetValidation.invalidRows > 0) {
+            statusClass = 'warning';
+            statusIcon = 'warning-sign';
+            statusText = '部分数据有错误';
+        } else if (sheetValidation.validRows > 0) {
+            statusClass = 'success';
+            statusIcon = 'ok-circle';
+            statusText = '全部有效';
+        }
+
+        html += '<div class="alert alert-' + statusClass + '" style="margin-bottom: 10px;">';
+        html += '<span class="glyphicon glyphicon-' + statusIcon + '"></span> ';
+        html += '<strong>' + statusText + '</strong>';
+
+        // 工作表错误信息
+        if (sheetValidation.errors && sheetValidation.errors.length > 0) {
+            html += '<br><small>';
+            html += sheetValidation.errors.join('<br>');
+            html += '</small>';
+        }
+
+        // 统计信息
+        if (sheetValidation.totalRows > 0) {
+            html += '<hr style="margin: 10px 0;">';
+            html += '<div class="sheet-statistics">';
+            html += '<span class="label label-default">共 ' + sheetValidation.totalRows + ' 行</span> ';
+            html += '<span class="label label-success">有效 ' + sheetValidation.validRows + ' 行</span> ';
+            html += '<span class="label label-danger">错误 ' + sheetValidation.invalidRows + ' 行</span>';
+            html += '</div>';
+        }
+
+        html += '</div>';
+
+        return html;
+    }
+
+    /**
+     * 构建状态单元格（有效/无效标记 + 错误信息）
+     */
+    function buildStatusCell(item) {
+        var statusBadge = item.valid
+            ? '<span class="label label-success">' + MSG.STATUS_VALID + '</span>'
+            : '<span class="label label-danger">' + MSG.STATUS_INVALID + '</span>';
+
+        var errorMsg = item.errorMessage || '';
+        if (errorMsg) {
+            statusBadge += '<br><small class="error-message">' + errorMsg + '</small>';
+        }
+
+        return statusBadge;
     }
 });

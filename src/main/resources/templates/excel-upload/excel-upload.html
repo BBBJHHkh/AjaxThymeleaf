@@ -72,6 +72,9 @@
 
                     <div class="tab-content" id="tabContent" style="display: none;">
                         <div class="tab-pane fade in active" id="computerTab">
+                            <!-- 工作表状态区域 -->
+                            <div id="computerSheetStatus" style="display: none; margin-top: 15px;"></div>
+                            
                             <h4 th:text="#{excel.table.computer.title}">电脑订单列表</h4>
                             <div class="table-container">
                                 <table class="table table-bordered table-striped table-hover" id="computerTable">
@@ -93,6 +96,9 @@
                         </div>
 
                         <div class="tab-pane fade" id="customerTab">
+                            <!-- 工作表状态区域 -->
+                            <div id="customerSheetStatus" style="display: none; margin-top: 15px;"></div>
+                            
                             <h4 th:text="#{excel.table.customer.title}">客户信息列表</h4>
                             <div class="table-container">
                                 <table class="table table-bordered table-striped table-hover" id="customerTable">
