@@ -107,14 +107,14 @@ public class ExcelService {
             return orders;
         }
 
-        for (int i = 2; i <= lastRow; i++) {
+        for (int i = 1; i <= lastRow; i++) {
             Row row = sheet.getRow(i);
             if (row == null || isEmptyRow(row)) {
                 continue;
             }
 
             ExcelComputerOrder order = new ExcelComputerOrder();
-            order.setRowNumber(i + 1);
+            order.setRowNumber(i);
             StringBuilder errors = new StringBuilder();
 
             try {
@@ -174,14 +174,14 @@ public class ExcelService {
             return customers;
         }
 
-        for (int i = 2; i <= lastRow; i++) {
+        for (int i = 1; i <= lastRow; i++) {
             Row row = sheet.getRow(i);
             if (row == null || isEmptyRow(row)) {
                 continue;
             }
 
             ExcelCustomer customer = new ExcelCustomer();
-            customer.setRowNumber(i + 1);
+            customer.setRowNumber(i);
             StringBuilder errors = new StringBuilder();
 
             try {

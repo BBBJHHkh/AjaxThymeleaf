@@ -159,7 +159,8 @@ $(function() {
 
     function displayData(result) {
         $('#dataSection').show();
-
+		$('#tabContent').show();
+		
         // Display computer orders
         var computerBody = $('#computerTableBody');
         computerBody.empty();

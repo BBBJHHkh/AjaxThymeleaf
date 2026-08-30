@@ -99,20 +99,23 @@
                 </div>
             </div>
 
-            <div id="resultSection" class="result-section" style="display: none;">
+            <div id="resultSection" class="result-section" >
                 <div id="messageBox" class="alert"></div>
 
-                <div id="dataSection" style="display: none;">
-                    <ul class="nav nav-tabs" id="dataTabs">
+                <div id="dataSection" >
+                    <ul class="nav nav-pills" id="dataTabs">
                         <li class="active">
                             <a href="#computerTab" data-toggle="tab">电脑订单</a>
                         </li>
                         <li>
                             <a href="#customerTab" data-toggle="tab">客户信息</a>
                         </li>
+						<li>
+						    <a  href="#customerTab" data-toggle="tab">保修信息</a>
+						</li>
                     </ul>
 
-                    <div class="tab-content">
+                    <div class="tab-content" id="tabContent" style="display: none;">
                         <div class="tab-pane fade in active" id="computerTab">
                             <h4>电脑订单列表</h4>
                             <div class="table-container">
