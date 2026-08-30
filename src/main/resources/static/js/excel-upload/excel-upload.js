@@ -21,18 +21,19 @@ $(function() {
 
     function validateFile(file) {
         if (!file) {
-            return '请先选择一个 Excel 文件';
+            return MSG.FILE_REQUIRED;
         }
         if (file.size > MAX_FILE_SIZE) {
             var sizeMB = (file.size / 1024 / 1024).toFixed(2);
-            return '文件过大（' + sizeMB + ' MB），最大允许 20 MB';
+            var maxMB = (MAX_FILE_SIZE / 1024 / 1024).toFixed(0);
+            return formatMsg(MSG.FILE_TOO_LARGE, sizeMB, maxMB);
         }
         var name = (file.name || '').toLowerCase();
         var extOk = ALLOWED_EXTENSIONS.some(function(ext) {
             return name.endsWith(ext);
         });
         if (!extOk) {
-            return '只支持 .xlsx 或 .xls 格式的 Excel 文件';
+            return MSG.FILE_INVALID_FORMAT;
         }
         return null;
     }
@@ -43,7 +44,7 @@ $(function() {
         var file = fileInput.files[0];
 
         if (!file) {
-            showMessage('请先选择一个 Excel 文件', 'warning');
+            showMessage(MSG.FILE_REQUIRED, 'warning');
             return;
         }
 
@@ -56,7 +57,7 @@ $(function() {
         var formData = new FormData();
         formData.append('file', file);
 
-        $('#btnCheck').prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> Checking...');
+        $('#btnCheck').prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> ' + MSG.BTN_CHECKING);
 
         $.ajax({
             url: '/thymeleaf/excel-upload/check',
@@ -65,17 +66,17 @@ $(function() {
             processData: false,
             contentType: false,
             success: function(result) {
-                $('#btnCheck').prop('disabled', false).html('<span class="glyphicon glyphicon-check"></span> Check');
+                $('#btnCheck').prop('disabled', false).html('<span class="glyphicon glyphicon-check"></span> ' + MSG.BTN_CHECK);
 
                 if (result.valid && !result.hasErrors) {
                     validatedData = result;
                     $('#btnUpload').prop('disabled', false);
-                    showMessage(result.message || '校验通过！', 'success');
+                    showMessage(result.message || MSG.CHECK_PASSED, 'success');
                     displayData(result);
                 } else {
                     validatedData = null;
                     $('#btnUpload').prop('disabled', true);
-                    var errorMsg = '校验失败！';
+                    var errorMsg = MSG.CHECK_FAILED;
                     if (result.errors && result.errors.length > 0) {
                         errorMsg += '<br>' + result.errors.join('<br>');
                     }
@@ -84,18 +85,18 @@ $(function() {
                 }
             },
             error: function(xhr, status, error) {
-                $('#btnCheck').prop('disabled', false).html('<span class="glyphicon glyphicon-check"></span> Check');
-                var errorMsg = '系统错误：';
+                $('#btnCheck').prop('disabled', false).html('<span class="glyphicon glyphicon-check"></span> ' + MSG.BTN_CHECK);
+                var errorMsg = MSG.ERROR_SYSTEM;
                 if (xhr.status === 404) {
-                    errorMsg = '接口不存在 (404)，请联系管理员检查服务器配置';
+                    errorMsg = MSG.ERROR_NOT_FOUND;
                 } else if (xhr.status === 500) {
-                    errorMsg = '服务器内部错误 (500)，请查看服务器日志';
+                    errorMsg = MSG.ERROR_SERVER_ERROR;
                 } else if (xhr.status === 403) {
-                    errorMsg = '没有权限访问此接口 (403)';
+                    errorMsg = MSG.ERROR_FORBIDDEN;
                 } else if (status === 'timeout') {
-                    errorMsg = '请求超时，请检查网络连接';
+                    errorMsg = MSG.ERROR_TIMEOUT;
                 } else {
-                    errorMsg = '请求失败 (' + xhr.status + '): ' + (xhr.responseJSON ? xhr.responseJSON.message : error);
+                    errorMsg = formatMsg(MSG.ERROR_REQUEST_FAILED, xhr.status, (xhr.responseJSON ? xhr.responseJSON.message : error));
                 }
                 showMessage(errorMsg, 'danger');
             }
@@ -105,11 +106,11 @@ $(function() {
     // Upload button click
     $('#btnUpload').click(function() {
         if (!validatedData) {
-            showMessage('请先进行 Check 操作', 'warning');
+            showMessage(MSG.CHECK_REQUIRE_FIRST, 'warning');
             return;
         }
 
-        $('#btnUpload').prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> Uploading...');
+        $('#btnUpload').prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> ' + MSG.BTN_UPLOADING);
 
         $.ajax({
             url: '/thymeleaf/excel-upload/upload',
@@ -120,7 +121,7 @@ $(function() {
                 customers: validatedData.customers
             }),
             success: function(result) {
-                $('#btnUpload').prop('disabled', false).html('<span class="glyphicon glyphicon-upload"></span> Upload');
+                $('#btnUpload').prop('disabled', false).html('<span class="glyphicon glyphicon-upload"></span> ' + MSG.BTN_UPLOAD);
                 if (result.valid) {
                     showMessage(result.message, 'success');
                     validatedData = null;
@@ -131,8 +132,8 @@ $(function() {
                 }
             },
             error: function(xhr, status, error) {
-                $('#btnUpload').prop('disabled', false).html('<span class="glyphicon glyphicon-upload"></span> Upload');
-                showMessage('上传失败: ' + error, 'danger');
+                $('#btnUpload').prop('disabled', false).html('<span class="glyphicon glyphicon-upload"></span> ' + MSG.BTN_UPLOAD);
+                showMessage(formatMsg(MSG.UPLOAD_FAILED, error), 'danger');
             }
         });
     });
@@ -168,8 +169,8 @@ $(function() {
             $.each(result.computerOrders, function(i, order) {
                 var rowClass = order.valid ? '' : 'error-row';
                 var statusBadge = order.valid
-                    ? '<span class="label label-success">有效</span>'
-                    : '<span class="label label-danger">无效</span>';
+                    ? '<span class="label label-success">' + MSG.STATUS_VALID + '</span>'
+                    : '<span class="label label-danger">' + MSG.STATUS_INVALID + '</span>';
                 var errorMsg = order.errorMessage || '';
 
                 computerBody.append(
@@ -193,8 +194,8 @@ $(function() {
             $.each(result.customers, function(i, customer) {
                 var rowClass = customer.valid ? '' : 'error-row';
                 var statusBadge = customer.valid
-                    ? '<span class="label label-success">有效</span>'
-                    : '<span class="label label-danger">无效</span>';
+                    ? '<span class="label label-success">' + MSG.STATUS_VALID + '</span>'
+                    : '<span class="label label-danger">' + MSG.STATUS_INVALID + '</span>';
                 var errorMsg = customer.errorMessage || '';
 
                 customerBody.append(
