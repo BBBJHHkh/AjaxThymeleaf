@@ -1,0 +1,126 @@
+/**
+ * custom.css — 自定义样式汇总
+ * 
+ * 使用说明：
+ * - 此文件加载顺序：bootstrap.min.css → core.css → custom.css
+ * - 覆盖 Bootstrap 默认样式时使用 !important 优先
+ * - 按区块分组，方便以后维护
+ */
+
+/* =============================================
+   1. Excel 上传页面（excel-upload.html）
+   ============================================= */
+
+/* --- 页面整体布局 --- */
+.upload-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+/* --- 文件上传区域 --- */
+.file-upload-section {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* 按钮组间距（与 Bootstrap 默认的 btn-group 区分开） */
+.btn-group-custom {
+    margin-top: 15px;
+}
+
+/* --- 结果展示区域 --- */
+.result-section {
+    margin-top: 20px;
+}
+
+/* --- 表格特殊样式 --- */
+/* 错误行高亮（Excel 校验失败时使用） */
+.error-row {
+    background-color: #fff3cd !important;
+}
+
+/* 表格滚动容器（避免表格太长撑破页面） */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* --- 消息提示文字颜色 --- */
+.error-message {
+    color: #dc3545;
+    font-size: 0.9em;
+}
+
+.success-message {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* --- 标签页（Tabs）--- */
+.nav-tabs {
+    margin-bottom: 0;
+}
+
+.tab-content {
+    margin-top: 15px;
+}
+
+/* --- 说明提示框（info-box）--- */
+.info-box {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+
+/* =============================================
+   2. Bootstrap 样式覆盖
+   ============================================= */
+
+/* --- 表格隔行变色（默认灰色 #f9f9f9，可自行修改颜色） --- */
+.table-striped > tbody > tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+/* --- 表格悬停高亮（鼠标移上去的行变色） --- */
+.table-hover > tbody > tr:hover {
+    background-color: #f0f7ff;
+}
+
+/* --- 表头样式加强（.info 是 Bootstrap 的浅蓝色） --- */
+.table > thead > tr.info > th {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+
+/* =============================================
+   3. 常用辅助类（项目中多处复用）
+   ============================================= */
+
+/* 文字截断（表格单元格内容过长时省略） */
+.text-truncate {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 清除浮动 */
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* 块级元素居中 */
+.center-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
