@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>多模块管理后台 - Dashboard (iframe Demo)</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/resources/images/favicon.ico}">
+
+    <link href="../../../resources/css/bootstrap.min.css" rel="stylesheet"
+          media="screen" th:href="@{/resources/css/bootstrap.min.css}"/>
+    <link href="../../../resources/css/core.css" rel="stylesheet"
+          media="screen" th:href="@{/resources/css/core.css}"/>
+
+    <style>
+        .module-box {
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fafbfc;
+        }
+        .module-box h3 { margin-top: 0; color: #333; }
+        iframe {
+            width: 100%;
+            height: 220px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}">Header</div>
+
+<div class="container">
+    <h2>📊 综合管理后台</h2>
+    <p class="text-muted">
+        当前页面通过两个 <code>&lt;iframe&gt;</code> 嵌入了两个不同功能的子页面。
+        每个子页面是独立的 HTTP 请求，可以单独刷新、单独传参。
+    </p>
+
+    <!-- 第一个子页面：系统实时状态 -->
+    <div class="module-box">
+        <h3>模块一：系统实时状态</h3>
+        <iframe th:src="@{/dashboard/stats}"></iframe>
+    </div>
+
+    <!-- 第二个子页面：动态数据报表（带下拉联动） -->
+    <div class="module-box">
+        <h3>模块二：行业动态报表（带下拉联动）</h3>
+        <iframe th:src="@{/dashboard/report}"></iframe>
+    </div>
+</div>
+
+<div th:insert="~{fragments/footer :: footer}">&copy; Footer</div>
+</body>
+</html>

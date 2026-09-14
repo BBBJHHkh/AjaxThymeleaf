@@ -82,7 +82,20 @@ $(function() {
                     
                     // 文件级错误
                     if (result.fileValidation && result.fileValidation.errors && result.fileValidation.errors.length > 0) {
-                        errorMsg += '<hr>' + result.fileValidation.errors.join('<br>');
+                        errorMsg += '<hr><strong>📄 文件错误:</strong><br>' + result.fileValidation.errors.join('<br>');
+                    }
+                    
+                    // 工作表级错误（明确指出哪个工作表有问题）
+                    var sheetErrors = [];
+                    if (result.computerOrdersSheet && result.computerOrdersSheet.errors && result.computerOrdersSheet.errors.length > 0) {
+                        sheetErrors.push('<strong>📊 电脑订单工作表:</strong><br>' + result.computerOrdersSheet.errors.join('<br>'));
+                    }
+                    if (result.customersSheet && result.customersSheet.errors && result.customersSheet.errors.length > 0) {
+                        sheetErrors.push('<strong>👥 客户工作表:</strong><br>' + result.customersSheet.errors.join('<br>'));
+                    }
+                    
+                    if (sheetErrors.length > 0) {
+                        errorMsg += '<hr>' + sheetErrors.join('<hr>');
                     }
                     
                     // 兼容旧版 errors 字段

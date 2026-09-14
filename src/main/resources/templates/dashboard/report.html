@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>动态报表子页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            margin: 0;
+            padding: 5px;
+        }
+        .control-bar { margin-bottom: 15px; }
+        select {
+            padding: 6px 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .data-card {
+            background: #f0f4f8;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .data-card h4 { margin: 0 0 8px 0; color: #007bff; }
+        .data-card p { margin: 0; color: #444; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="control-bar">
+        <label for="categorySelect"><b>请选择行业分类：</b></label>
+        <select id="categorySelect" onchange="changeCategory(this)">
+            <option value="tech"      th:selected="${currentCategory == 'tech'}">科技板块</option>
+            <option value="finance"   th:selected="${currentCategory == 'finance'}">金融板块</option>
+            <option value="lifestyle" th:selected="${currentCategory == 'lifestyle'}">消费板块</option>
+        </select>
+    </div>
+
+    <div class="data-card">
+        <h4 th:text="${reportTitle}">报表标题</h4>
+        <p th:text="${reportData}">报表具体内容...</p>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Thymeleaf inline: context path is added automatically, so this works
+        // even if server.servlet.context-path in application.properties changes.
+        var reportBaseUrl = /*[[@{/dashboard/report}]]*/ '/dashboard/report';
+        function changeCategory(selectElement) {
+            window.location.href = reportBaseUrl + '?category=' + selectElement.value;
+        }
+        /*]]>*/
+    </script>
+
+</body>
+</html>
