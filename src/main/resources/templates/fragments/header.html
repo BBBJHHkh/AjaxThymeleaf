@@ -40,6 +40,10 @@
                 <li th:classappend="${module == 'excel-upload' ? 'active' : ''}">
                     <a href="#" th:href="@{/excel-upload}">Excel Upload</a>
                 </li>
+
+                <li th:classappend="${module == 'dashboard' ? 'active' : ''}">
+                    <a href="#" th:href="@{/dashboard}">Dashboard (iframe Demo)</a>
+                </li>
                 
                 <!-- <li th:classappend="${module == 'ajax' ? 'active' : ''}">
                     <a href="#" th:href="@{/ajax}">Flow-Ajax-Basic</a>

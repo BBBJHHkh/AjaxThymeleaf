@@ -55,6 +55,11 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
+            // Allow the dashboard iframes to embed sub-pages from the same origin.
+            // The default X-Frame-Options: DENY blocks them.
+            .headers()
+                .frameOptions().sameOrigin()
+                .and()
             .formLogin()
                 .loginPage("/signin")
                 .permitAll()
