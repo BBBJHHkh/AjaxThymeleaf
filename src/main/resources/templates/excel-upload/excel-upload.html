@@ -24,31 +24,31 @@
 <div class="container">
     <div layout:fragment="content">
         <div class="upload-container">
-            <h2>Excel 文件上传与校验</h2>
+            <h2 th:text="#{excel.page.title}">Excel 文件上传与校验</h2>
 
             <div class="info-box">
-                <strong>说明：</strong>请上传包含两个工作表的 Excel 文件（.xlsx 格式）：
+                <strong th:text="#{excel.page.description}">说明：</strong><span th:text="#{excel.page.description.text}">请上传包含两个工作表的 Excel 文件（.xlsx 格式）：</span>
                 <ul style="margin-bottom: 0;">
-                    <li><strong>电脑订单表</strong>：品牌、价格、内存大小、出厂日期、销售日期</li>
-                    <li><strong>客户表</strong>：客户名称、客户电话、电脑型号、台数、邮箱</li>
+                    <li><strong th:text="#{excel.page.sheet1}">电脑订单表</strong>：<span th:text="#{excel.page.sheet1.desc}">品牌、价格、内存大小、出厂日期、销售日期</span></li>
+                    <li><strong th:text="#{excel.page.sheet2}">客户表</strong>：<span th:text="#{excel.page.sheet2.desc}">客户名称、客户电话、电脑型号、台数、邮箱</span></li>
                 </ul>
             </div>
 
             <div class="file-upload-section">
                 <div class="form-group">
-                    <label for="excelFile">选择 Excel 文件：</label>
+                    <label for="excelFile" th:text="#{excel.file.label}">选择 Excel 文件：</label>
                     <input type="file" id="excelFile" name="file" accept=".xlsx,.xls" class="form-control">
                 </div>
 
                 <div class="btn-group-custom">
                     <button type="button" id="btnCheck" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-check"></span> Check
+                        <span class="glyphicon glyphicon-check"></span> <span th:text="#{excel.btn.check}">Check</span>
                     </button>
                     <button type="button" id="btnUpload" class="btn btn-success" disabled>
-                        <span class="glyphicon glyphicon-upload"></span> Upload
+                        <span class="glyphicon glyphicon-upload"></span> <span th:text="#{excel.btn.upload}">Upload</span>
                     </button>
                     <button type="button" id="btnReset" class="btn btn-default">
-                        <span class="glyphicon glyphicon-refresh"></span> Reset
+                        <span class="glyphicon glyphicon-refresh"></span> <span th:text="#{excel.btn.reset}">Reset</span>
                     </button>
                 </div>
             </div>
@@ -60,30 +60,33 @@
                 <div id="dataSection" >
                     <ul class="nav nav-pills" id="dataTabs">
                         <li class="active">
-                            <a href="#computerTab" data-toggle="tab">电脑订单</a>
+                            <a href="#computerTab" data-toggle="tab" th:text="#{excel.tab.computer}">电脑订单</a>
                         </li>
                         <li>
-                            <a href="#customerTab" data-toggle="tab">客户信息</a>
+                            <a href="#customerTab" data-toggle="tab" th:text="#{excel.tab.customer}">客户信息</a>
                         </li>
 						<li>
-						    <a  href="#customerTab" data-toggle="tab">保修信息</a>
+						    <a href="#warrantyTab" data-toggle="tab" th:text="#{excel.tab.warranty}">保修信息</a>
 						</li>
                     </ul>
 
                     <div class="tab-content" id="tabContent" style="display: none;">
                         <div class="tab-pane fade in active" id="computerTab">
-                            <h4>电脑订单列表</h4>
+                            <!-- 工作表状态区域 -->
+                            <div id="computerSheetStatus" style="display: none; margin-top: 15px;"></div>
+                            
+                            <h4 th:text="#{excel.table.computer.title}">电脑订单列表</h4>
                             <div class="table-container">
                                 <table class="table table-bordered table-striped table-hover" id="computerTable">
                                     <thead>
                                         <tr class="info">
-                                            <th>行号</th>
-                                            <th>品牌</th>
-                                            <th>价格</th>
-                                            <th>内存大小</th>
-                                            <th>出厂日期</th>
-                                            <th>销售日期</th>
-                                            <th>状态</th>
+                                            <th th:text="#{excel.table.rowNumber}">行号</th>
+                                            <th th:text="#{excel.table.brand}">品牌</th>
+                                            <th th:text="#{excel.table.price}">价格</th>
+                                            <th th:text="#{excel.table.memory}">内存大小</th>
+                                            <th th:text="#{excel.table.manufactureDate}">出厂日期</th>
+                                            <th th:text="#{excel.table.saleDate}">销售日期</th>
+                                            <th th:text="#{excel.table.status}">状态</th>
                                         </tr>
                                     </thead>
                                     <tbody id="computerTableBody">
@@ -93,18 +96,21 @@
                         </div>
 
                         <div class="tab-pane fade" id="customerTab">
-                            <h4>客户信息列表</h4>
+                            <!-- 工作表状态区域 -->
+                            <div id="customerSheetStatus" style="display: none; margin-top: 15px;"></div>
+                            
+                            <h4 th:text="#{excel.table.customer.title}">客户信息列表</h4>
                             <div class="table-container">
                                 <table class="table table-bordered table-striped table-hover" id="customerTable">
                                     <thead>
                                         <tr class="info">
-                                            <th>行号</th>
-                                            <th>客户名称</th>
-                                            <th>客户电话</th>
-                                            <th>电脑型号</th>
-                                            <th>台数</th>
-                                            <th>邮箱</th>
-                                            <th>状态</th>
+                                            <th th:text="#{excel.table.rowNumber}">行号</th>
+                                            <th th:text="#{excel.table.customerName}">客户名称</th>
+                                            <th th:text="#{excel.table.phone}">客户电话</th>
+                                            <th th:text="#{excel.table.computerModel}">电脑型号</th>
+                                            <th th:text="#{excel.table.quantity}">台数</th>
+                                            <th th:text="#{excel.table.email}">邮箱</th>
+                                            <th th:text="#{excel.table.status}">状态</th>
                                         </tr>
                                     </thead>
                                     <tbody id="customerTableBody">
@@ -121,6 +127,52 @@
     <div th:replace="fragments/footer :: footer"></div>
 </div>
 
+    <!-- Thymeleaf 内联：将 messages.properties 的文案传给 JavaScript -->
+    <script th:inline="javascript">
+        // Excel 国际化消息常量（从后端 messages.properties 注入）
+        var MSG = {
+            // 文件验证
+            FILE_REQUIRED: /*[[#{excel.file.required}]]*/ '请先选择一个 Excel 文件',
+            FILE_TOO_LARGE: /*[[#{excel.file.tooLarge}]]*/ '文件过大（{0} MB），最大允许 {1} MB',
+            FILE_INVALID_FORMAT: /*[[#{excel.file.invalidFormat}]]*/ '只支持 .xlsx 或 .xls 格式的 Excel 文件',
+            
+            // 校验消息
+            CHECK_PASSED: /*[[#{excel.check.passed}]]*/ '校验通过！',
+            CHECK_FAILED: /*[[#{excel.check.failed}]]*/ '校验失败！',
+            CHECK_REQUIRE_FIRST: /*[[#{excel.check.requireFirst}]]*/ '请先进行 Check 操作',
+            
+            // 上传消息
+            UPLOAD_FAILED: /*[[#{excel.upload.failed}]]*/ '上传失败: {0}',
+            
+            // 按钮文本
+            BTN_CHECKING: /*[[#{excel.btn.checking}]]*/ 'Checking...',
+            BTN_UPLOADING: /*[[#{excel.btn.uploading}]]*/ 'Uploading...',
+            BTN_CHECK: /*[[#{excel.btn.check}]]*/ 'Check',
+            BTN_UPLOAD: /*[[#{excel.btn.upload}]]*/ 'Upload',
+            
+            // 错误消息
+            ERROR_SYSTEM: /*[[#{excel.error.system}]]*/ '系统错误：',
+            ERROR_NOT_FOUND: /*[[#{excel.error.notFound}]]*/ '接口不存在 (404)，请联系管理员检查服务器配置',
+            ERROR_SERVER_ERROR: /*[[#{excel.error.serverError}]]*/ '服务器内部错误 (500)，请查看服务器日志',
+            ERROR_FORBIDDEN: /*[[#{excel.error.forbidden}]]*/ '没有权限访问此接口 (403)',
+            ERROR_TIMEOUT: /*[[#{excel.error.timeout}]]*/ '请求超时，请检查网络连接',
+            ERROR_REQUEST_FAILED: /*[[#{excel.error.requestFailed}]]*/ '请求失败 ({0}): {1}',
+            
+            // 表格状态
+            STATUS_VALID: /*[[#{excel.status.valid}]]*/ '有效',
+            STATUS_INVALID: /*[[#{excel.status.invalid}]]*/ '无效'
+        };
+        
+        // 格式化消息（支持参数替换 {0}, {1}...）
+        function formatMsg(template, ...args) {
+            var result = template;
+            args.forEach(function(arg, index) {
+                result = result.replace('{' + index + '}', arg);
+            });
+            return result;
+        }
+    </script>
+    
     <!-- Excel 上传页面业务逻辑（独立 JS 文件，与后端 max-file-size=20MB 对齐） -->
     <!-- 缓存策略：
          - 开发期：devtools 会让浏览器禁用 JS 缓存；每次强制 reload 都能拿到最新内容

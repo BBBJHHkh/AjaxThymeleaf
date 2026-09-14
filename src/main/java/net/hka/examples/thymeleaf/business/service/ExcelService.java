@@ -2,6 +2,8 @@ package net.hka.examples.thymeleaf.business.service;
 
 import net.hka.examples.thymeleaf.business.dto.ExcelComputerOrder;
 import net.hka.examples.thymeleaf.business.dto.ExcelCustomer;
+import net.hka.examples.thymeleaf.business.dto.FileValidation;
+import net.hka.examples.thymeleaf.business.dto.SheetValidation;
 import net.hka.examples.thymeleaf.business.dto.ValidationResult;
 import net.hka.examples.thymeleaf.business.repository.ComputerOrderRepository;
 import net.hka.examples.thymeleaf.business.repository.CustomerRepository;
@@ -39,52 +41,83 @@ public class ExcelService {
 
     public ValidationResult parseAndValidateExcel(MultipartFile file) {
         ValidationResult result = new ValidationResult();
-
-        if (file == null || file.isEmpty()) {
-            result.addError("文件不能为空");
+        
+        // ===== 1. 文件级验证 =====
+        FileValidation fileValidation = validateFile(file);
+        result.setFileValidation(fileValidation);
+        
+        if (fileValidation.hasErrors()) {
+            result.setValid(false);
+            result.setMessage("文件验证失败");
             return result;
         }
-
-        String fileName = file.getOriginalFilename();
-        if (fileName == null || (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls"))) {
-            result.addError("只支持 .xlsx 或 .xls 格式的 Excel 文件");
-            return result;
-        }
-
+        
+        // ===== 2. 工作表级验证和数据解析 =====
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
-            Sheet computerSheet = findSheet(workbook, COMPUTER_SHEET_NAMES);
-            Sheet customerSheet = findSheet(workbook, CUSTOMER_SHEET_NAMES);
-
-            if (computerSheet == null) {
-                result.addError("未找到电脑订单工作表，请确保包含以下名称之一: " + String.join(", ", COMPUTER_SHEET_NAMES));
+            
+            // 2.1 获取所有工作表名称
+            List<String> allSheetNames = getAllSheetNames(workbook);
+            fileValidation.setAllSheetNames(allSheetNames);
+            
+            // 2.2 验证电脑订单工作表
+            SheetValidation computerSheetValidation = validateSheet(workbook, COMPUTER_SHEET_NAMES, "COMPUTER");
+            result.setComputerOrdersSheet(computerSheetValidation);
+            
+            // 2.3 验证客户工作表
+            SheetValidation customerSheetValidation = validateSheet(workbook, CUSTOMER_SHEET_NAMES, "CUSTOMER");
+            result.setCustomersSheet(customerSheetValidation);
+            
+            // 2.4 解析电脑订单数据
+            if (computerSheetValidation.isParseable()) {
+                Sheet computerSheet = workbook.getSheet(computerSheetValidation.getFoundName());
+                List<ExcelComputerOrder> computerOrders = parseComputerSheet(computerSheet);
+                result.setComputerOrders(computerOrders);
+                
+                // 检查是否为空
+                if (computerOrders.isEmpty()) {
+                    computerSheetValidation.setStatus(SheetValidation.SheetStatus.EMPTY);
+                    computerSheetValidation.addError("电脑订单工作表中没有数据（只有标题行）");
+                }
             }
-            if (customerSheet == null) {
-                result.addError("未找到客户工作表，请确保包含以下名称之一: " + String.join(", ", CUSTOMER_SHEET_NAMES));
+            
+            // 2.5 解析客户数据
+            if (customerSheetValidation.isParseable()) {
+                Sheet customerSheet = workbook.getSheet(customerSheetValidation.getFoundName());
+                List<ExcelCustomer> customers = parseCustomerSheet(customerSheet);
+                result.setCustomers(customers);
+                
+                // 检查是否为空
+                if (customers.isEmpty()) {
+                    customerSheetValidation.setStatus(SheetValidation.SheetStatus.EMPTY);
+                    customerSheetValidation.addError("客户工作表中没有数据（只有标题行）");
+                }
             }
-
-            if (!result.isValid()) {
-                return result;
-            }
-
-            List<ExcelComputerOrder> computerOrders = parseComputerSheet(computerSheet);
-            List<ExcelCustomer> customers = parseCustomerSheet(customerSheet);
-
-            result.setComputerOrders(computerOrders);
-            result.setCustomers(customers);
-
-            if (computerOrders.isEmpty()) {
-                result.addError("电脑订单工作表中没有数据");
-            }
-            if (customers.isEmpty()) {
-                result.addError("客户工作表中没有数据");
-            }
-
+            
         } catch (IOException e) {
-            result.addError("文件读取失败，文件可能已损坏");
+            fileValidation.setCanBeOpened(false);
+            fileValidation.addError("文件读取失败，文件可能已损坏");
+            result.setValid(false);
+            result.setMessage("文件解析失败");
+            return result;
         } catch (Exception e) {
-            result.addError("Excel 解析错误: " + e.getMessage());
+            fileValidation.addError("Excel 解析错误: " + e.getMessage());
+            result.setValid(false);
+            result.setMessage("Excel 解析错误");
+            return result;
         }
-
+        
+        // ===== 3. 更新整体状态 =====
+        result.updateOverallStatus();
+        
+        // 设置消息
+        if (result.isValid() && !result.hasDataErrors()) {
+            result.setMessage("校验通过！");
+        } else if (!result.isValid()) {
+            result.setMessage("校验失败，发现错误");
+        } else if (result.hasDataErrors()) {
+            result.setMessage("校验完成，部分数据有错误");
+        }
+        
         return result;
     }
 
@@ -96,6 +129,85 @@ public class ExcelService {
             }
         }
         return null;
+    }
+
+    /**
+     * 文件级验证
+     */
+    private FileValidation validateFile(MultipartFile file) {
+        FileValidation validation = new FileValidation();
+        
+        // 检查文件是否为空
+        if (file == null || file.isEmpty()) {
+            validation.setExists(false);
+            validation.addError("文件不能为空");
+            return validation;
+        }
+        
+        // 检查文件格式
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls"))) {
+            validation.setValidFormat(false);
+            validation.addError("只支持 .xlsx 或 .xls 格式的 Excel 文件");
+            return validation;
+        }
+        
+        return validation;
+    }
+
+    /**
+     * 获取所有工作表名称
+     */
+    private List<String> getAllSheetNames(Workbook workbook) {
+        List<String> names = new ArrayList<>();
+        int numberOfSheets = workbook.getNumberOfSheets();
+        for (int i = 0; i < numberOfSheets; i++) {
+            names.add(workbook.getSheetName(i));
+        }
+        return names;
+    }
+
+    /**
+     * 工作表级验证
+     */
+    private SheetValidation validateSheet(Workbook workbook, String[] expectedNames, String sheetType) {
+        SheetValidation validation = new SheetValidation();
+        validation.setSheetType(sheetType);
+        validation.setExpectedNames(java.util.Arrays.asList(expectedNames));
+        
+        // 查找工作表
+        Sheet sheet = null;
+        String foundName = null;
+        for (String name : expectedNames) {
+            sheet = workbook.getSheet(name);
+            if (sheet != null) {
+                foundName = name;
+                break;
+            }
+        }
+        
+        if (sheet == null) {
+            // 未找到工作表
+            validation.setStatus(SheetValidation.SheetStatus.NOT_FOUND);
+            validation.setFoundName(null);
+            
+            String sheetTypeName = "COMPUTER".equals(sheetType) ? "电脑订单" : "客户";
+            String error = String.format("未找到%s工作表，请确保包含以下名称之一: %s", 
+                sheetTypeName, String.join(", ", expectedNames));
+            validation.addError(error);
+            
+            // 提示当前有哪些工作表
+            List<String> allSheets = getAllSheetNames(workbook);
+            if (!allSheets.isEmpty()) {
+                validation.addError("当前 Excel 中的工作表: " + String.join(", ", allSheets));
+            }
+        } else {
+            // 找到工作表
+            validation.setStatus(SheetValidation.SheetStatus.VALID);
+            validation.setFoundName(foundName);
+        }
+        
+        return validation;
     }
 
     private List<ExcelComputerOrder> parseComputerSheet(Sheet sheet) {
